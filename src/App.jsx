@@ -76,20 +76,23 @@ Upload a resume above and I'll help you explore it! Ask me anything about the re
         }),
       })
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(errorData.error || `Server error: ${response.status}`)
+      }
+
       const data = await response.json()
 
-      if (response.ok) {
+      if (data.response) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
       } else {
-        setMessages(prev => [...prev, { 
-          role: 'assistant', 
-          content: `Error: ${data.error || 'Failed to get response'}` 
-        }])
+        throw new Error(data.error || 'No response from server')
       }
     } catch (error) {
+      console.error('Chat error:', error)
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: `Error: ${error.message}` 
+        content: `Error: ${error.message || 'Connection error. Please check if the API is configured correctly.'}` 
       }])
     } finally {
       setIsLoading(false)

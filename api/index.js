@@ -9,13 +9,20 @@ import fs from 'fs'
 const app = express()
 
 // Initialize OpenAI
+if (!process.env.OPENAI_API_KEY) {
+  console.error('❌ ERROR: OPENAI_API_KEY is not set in environment variables!')
+}
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
 // Middleware
-app.use(cors())
-app.use(express.json())
+app.use(cors({
+  origin: '*',
+  credentials: true
+}))
+app.use(express.json({ limit: '10mb' }))
 
 // Create uploads directory if it doesn't exist (for serverless, use /tmp)
 const uploadsDir = '/tmp/uploads'
@@ -51,13 +58,15 @@ const upload = multer({
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' })
+  res.json({ status: 'ok', message: 'Server is running', hasApiKey: !!process.env.OPENAI_API_KEY })
 })
 
 // Upload endpoint
 app.post('/api/upload', upload.single('resume'), async (req, res) => {
   let filePath = null
   try {
+    console.log('Upload request received')
+    
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded. Please select a PDF file.' })
     }
@@ -80,6 +89,7 @@ app.post('/api/upload', upload.single('resume'), async (req, res) => {
 
     res.json({ text })
   } catch (error) {
+    console.error('Upload error:', error)
     if (filePath && fs.existsSync(filePath)) {
       try {
         fs.unlinkSync(filePath)
@@ -97,6 +107,18 @@ app.post('/api/upload', upload.single('resume'), async (req, res) => {
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
   try {
+    console.log('Chat request received')
+    console.log('Request body:', { 
+      hasMessage: !!req.body.message, 
+      hasResumeText: !!req.body.resumeText,
+      conversationHistoryLength: req.body.conversationHistory?.length 
+    })
+    
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OPENAI_API_KEY is missing!')
+      return res.status(500).json({ error: 'OpenAI API key is not configured. Please check environment variables.' })
+    }
+
     const { message, resumeText, conversationHistory } = req.body
 
     if (!message) {
@@ -121,7 +143,7 @@ Answer questions about this resume accurately and helpfully. If the information 
     const messages = [systemMessage]
     
     // Add recent conversation history (last 10 messages to avoid token limits)
-    const recentHistory = conversationHistory.slice(-10)
+    const recentHistory = (conversationHistory || []).slice(-10)
     recentHistory.forEach(msg => {
       if (msg.role === 'user' || msg.role === 'assistant') {
         messages.push({
@@ -137,6 +159,8 @@ Answer questions about this resume accurately and helpfully. If the information 
       content: message
     })
 
+    console.log('Calling OpenAI API with', messages.length, 'messages')
+    
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
       model: 'gpt-4',
@@ -146,14 +170,32 @@ Answer questions about this resume accurately and helpfully. If the information 
     })
 
     const response = completion.choices[0].message.content
+    console.log('OpenAI response received, length:', response.length)
 
     res.json({ response })
   } catch (error) {
     console.error('Chat error:', error)
+    console.error('Error name:', error.name)
+    console.error('Error message:', error.message)
+    
+    // Provide more helpful error messages
+    let errorMessage = 'Failed to get response from AI'
+    if (error.message) {
+      errorMessage = error.message
+    } else if (error.name === 'APIError') {
+      errorMessage = 'OpenAI API error. Please check your API key and account status.'
+    }
+
     res.status(500).json({ 
-      error: error.message || 'Failed to get response from AI' 
+      error: errorMessage
     })
   }
+})
+
+// Handle all other routes
+app.use((req, res) => {
+  console.log('404 - Route not found:', req.method, req.path)
+  res.status(404).json({ error: 'Route not found', path: req.path, method: req.method })
 })
 
 // Export as Vercel serverless function
