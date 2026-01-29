@@ -16,6 +16,11 @@ A React-based chatbot application that allows users to upload resumes and ask qu
 npm install
 ```
 
+2. Create a `.env` file in the root directory with your OpenAI API key:
+```
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
 3. Start the development server:
 ```bash
 npm run dev
