@@ -17,6 +17,7 @@ Upload a resume above and I'll help you explore it! Ask me anything about the re
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [resumeText, setResumeText] = useState('')
+  const [apiStatus, setApiStatus] = useState('unknown')
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
@@ -26,6 +27,26 @@ Upload a resume above and I'll help you explore it! Ask me anything about the re
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // Check API health on mount
+  useEffect(() => {
+    const checkApiHealth = async () => {
+      try {
+        const response = await fetch('/api/health')
+        if (response.ok) {
+          const data = await response.json()
+          setApiStatus(data.hasApiKey ? 'ready' : 'no-key')
+          console.log('API Status:', data)
+        } else {
+          setApiStatus('error')
+        }
+      } catch (error) {
+        console.error('API health check failed:', error)
+        setApiStatus('error')
+      }
+    }
+    checkApiHealth()
+  }, [])
 
   const handleResumeUpload = async (text) => {
     if (text && text.trim().length > 0) {
@@ -76,8 +97,14 @@ Upload a resume above and I'll help you explore it! Ask me anything about the re
         }),
       })
 
+      // Check if response is ok
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        let errorData
+        try {
+          errorData = await response.json()
+        } catch (parseError) {
+          errorData = { error: `Server error: ${response.status} ${response.statusText}` }
+        }
         throw new Error(errorData.error || `Server error: ${response.status}`)
       }
 
@@ -90,9 +117,27 @@ Upload a resume above and I'll help you explore it! Ask me anything about the re
       }
     } catch (error) {
       console.error('Chat error:', error)
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      })
+      
+      // Provide more helpful error messages
+      let errorMessage = 'Connection error'
+      if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
+        errorMessage = 'Network error: Unable to reach the API server.\n\nPossible causes:\n• API not deployed or function not found\n• CORS configuration issue\n• Network connectivity problem\n\nCheck Vercel dashboard → Functions tab for errors.'
+      } else if (error.message && error.message.includes('API key')) {
+        errorMessage = 'OpenAI API key is not configured.\n\nPlease:\n1. Go to Vercel Dashboard → Settings → Environment Variables\n2. Add OPENAI_API_KEY with your API key\n3. Redeploy the project'
+      } else if (error.message) {
+        errorMessage = error.message
+      } else {
+        errorMessage = 'Connection error. Please check:\n1. API is deployed and running\n2. OPENAI_API_KEY is set in Vercel environment variables\n3. Check Vercel function logs for details'
+      }
+      
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: `Error: ${error.message || 'Connection error. Please check if the API is configured correctly.'}` 
+        content: `❌ Error: ${errorMessage}\n\n💡 Debug: Open browser console (F12) and check:\n• Network tab for failed requests\n• Console tab for error details\n• Vercel Functions tab for server logs` 
       }])
     } finally {
       setIsLoading(false)
