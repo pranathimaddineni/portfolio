@@ -1,0 +1,196 @@
+.portfolio-section {
+  width: 100%;
+}
+
+.portfolio-title {
+  color: #333;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  text-align: center;
+  text-shadow: none;
+  letter-spacing: 0.5px;
+}
+
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  max-width: 100%;
+}
+
+/* Large screen optimizations for portfolio */
+@media (min-width: 1600px) {
+  .portfolio-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  
+  .portfolio-item {
+    padding: 24px;
+  }
+  
+  .portfolio-item-name {
+    font-size: 20px;
+  }
+  
+  .portfolio-item-description {
+    font-size: 14px;
+  }
+}
+
+.portfolio-item {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+  animation: slideInUp 0.6s ease-out;
+  animation-delay: var(--delay);
+  animation-fill-mode: both;
+  min-width: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.portfolio-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.portfolio-item:hover::before {
+  left: 100%;
+}
+
+.portfolio-item:hover {
+  background: linear-gradient(135deg, #7c8ef5 0%, #8a5fb8 100%);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4), 0 0 20px rgba(118, 75, 162, 0.3);
+}
+
+.portfolio-item:active {
+  transform: translateY(-2px) scale(1);
+}
+
+.portfolio-item-icon {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  transition: transform 0.3s ease;
+}
+
+.portfolio-item:hover .portfolio-item-icon {
+  transform: scale(1.2) rotate(5deg);
+}
+
+.portfolio-item-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+}
+
+.portfolio-item-name {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.3px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+.portfolio-item-description {
+  font-size: 14px;
+  font-weight: 400;
+  opacity: 0.98;
+  line-height: 1.6;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  word-wrap: break-word;
+  max-width: 100%;
+  letter-spacing: 0.2px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+.portfolio-item-arrow {
+  font-size: 24px;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.portfolio-item:hover .portfolio-item-arrow {
+  opacity: 1;
+  transform: translateX(6px) scale(1.2);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .portfolio-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .portfolio-item {
+    padding: 16px;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+  
+  .portfolio-item-icon {
+    font-size: 28px;
+  }
+  
+  .portfolio-item-name {
+    font-size: 16px;
+  }
+  
+  .portfolio-item-description {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 480px) {
+  .portfolio-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .portfolio-item {
+    padding: 18px;
+  }
+}

@@ -2,12 +2,16 @@ import { useState, useRef, useEffect } from 'react'
 import './App.css'
 import ChatMessage from './components/ChatMessage'
 import ResumeUpload from './components/ResumeUpload'
+import Portfolio from './components/Portfolio'
+import ChatbotInfo from './components/ChatbotInfo'
 
 function App() {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: 'Hello! Upload a resume and I can answer questions about it.'
+      content: `👋 Hello! I'm your AI-powered Resume Assistant. 
+
+Upload a resume above and I'll help you explore it! Ask me anything about the resume content - skills, experience, education, achievements, and more. 🚀`
     }
   ])
   const [input, setInput] = useState('')
@@ -94,45 +98,61 @@ function App() {
 
   return (
     <div className="app">
-      <div className="chat-container">
-        <div className="chat-header">
-          <h1>Resume Chatbot</h1>
-          <ResumeUpload onUpload={handleResumeUpload} />
-        </div>
-        
-        <div className="messages-container">
-          {messages.map((msg, idx) => (
-            <ChatMessage key={idx} message={msg} />
-          ))}
-          {isLoading && (
-            <div className="message assistant">
-              <div className="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
+      <div className="main-container">
+        {/* Portfolio Section - Full Width */}
+        <div className="portfolio-container-full">
+          <Portfolio />
         </div>
 
-        <form onSubmit={handleSendMessage} className="input-form">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask a question about the resume..."
-            disabled={isLoading}
-            className="message-input"
-          />
-          <button 
-            type="submit" 
-            disabled={isLoading || !input.trim()}
-            className="send-button"
-          >
-            Send
-          </button>
-        </form>
+        {/* Chatbot Section - Two Columns Side by Side */}
+        <div className="chatbot-container-full">
+          <div className="chatbot-left-section">
+            <div className="chatbot-header">
+              <h1>Gen AI Chatbot</h1>
+              <p className="chatbot-description">
+                A mini AI project demonstrating my practical skills with GenAI using OpenAI LLM - A chatbot that showcases my ability to build intelligent, interactive applications for real-world use.
+              </p>
+              <ChatbotInfo />
+              <ResumeUpload onUpload={handleResumeUpload} />
+            </div>
+          </div>
+          
+          <div className="chatbot-right-section">
+            <div className="messages-container">
+              {messages.map((msg, idx) => (
+                <ChatMessage key={idx} message={msg} />
+              ))}
+              {isLoading && (
+                <div className="message assistant">
+                  <div className="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            <form onSubmit={handleSendMessage} className="input-form">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask a question about the resume..."
+                disabled={isLoading}
+                className="message-input"
+              />
+              <button 
+                type="submit" 
+                disabled={isLoading || !input.trim()}
+                className="send-button"
+              >
+                Send
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   )
