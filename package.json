@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "server": "node server/index.js",
     "kill-port": "lsof -ti:5000 | xargs kill -9 || echo 'No process found on port 5000'",
-    "restart-server": "npm run kill-port && sleep 1 && npm run server"
+    "restart-server": "npm run kill-port && sleep 1 && npm run server",
+    "vercel-build": "vite build"
   },
   "dependencies": {
     "react": "^18.2.0",
